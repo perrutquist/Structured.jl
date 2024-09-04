@@ -15,15 +15,15 @@ inlineschema(::NamedTuple) = true
 """
 Returns a schema and a list of types that are referenced from it
 """
-schema(::Type{String}) = ((type="string",), ())
-schema(::Type{<:Real}) = ((type="number",), ())
-schema(::Type{<:Integer}) = ((type="integer",), ())
-schema(::Type{Bool}) = ((type="boolean",), ())
-schema(::Type{Nothing}) = ((type="null",), ())
+schema_and_subtypes(::Type{String}) = ((type="string",), ())
+schema_and_subtypes(::Type{<:Real}) = ((type="number",), ())
+schema_and_subtypes(::Type{<:Integer}) = ((type="integer",), ())
+schema_and_subtypes(::Type{Bool}) = ((type="boolean",), ())
+schema_and_subtypes(::Type{Nothing}) = ((type="null",), ())
 
-function schema(::Type{Vector{T}}) where {T}
+function schema_and_subtypes(::Type{Vector{T}}) where {T}
     if inlineschema(T)
-        s, st = schema(t)
+        s, st = schema_and_subtypes(t)
         ((type="array", items=s), st)
     else
         ((type="array", items=schemaref(T)), (T,))
@@ -32,13 +32,13 @@ end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)
 
-function schema(::Type{T}) where {T}
+function schema_and_subtypes(::Type{T}) where {T}
     rt = []
     pr = []
 
     for (k,v) in zip(fieldnames(T), T.types)
         if inlineschema(v)
-            s, st = schema(v)
+            s, st = schema_and_subtypes(v)
             for q in st
                 _setpush!(rt, q)
             end
@@ -49,22 +49,22 @@ function schema(::Type{T}) where {T}
         push!(pr, k => s)
     end
     props = NamedTuple(pr) 
-    ((type="object", properties=props, required=keys(props), additionalProperties=false), Tuple(rt))
+    ((type="object", properties=props, additionalProperties=false, required=keys(props)), Tuple(rt))
 end
 
-function schema(T::Union)
+function schema_and_subtypes(T::Union)
     (; a, b) = T
     ts = [a]
     while b isa Union
         (; a, b) = b
-        push!(ts, a)
+        pushfirst!(ts, a)
     end
-    push!(ts, b)
+    pushfirst!(ts, b)
     a = []
     b = []
     for t in ts
         if inlineschema(t)
-            ss, st = schema(t)
+            ss, st = schema_and_subtypes(t)
             push!(a, ss)
             for q in st
                 _setpush!(b, q)
@@ -85,8 +85,20 @@ end
 """
 A schema including a set of references with schemas.
 """
-function schema_with_refs()
-    # TODO
+function schema(t)
+    s, ts = schema_and_subtypes(t)
+    isempty(ts) && return s
+    i = 1
+    ss = []
+    while i<=length(ts)
+        (si, tsi) = schema_and_subtypes(ts[i])
+        push!(ss, Symbol(string(ts[i])) => si)
+        for q in tsi
+            _setpush!(ts, q)
+        end
+        i += 1
+    end
+    NamedTuple{(fieldnames(typeof(s))..., Symbol("\$defs"))}((s..., NamedTuple(ss)))
 end
 
 end # module
