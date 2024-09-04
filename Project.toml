@@ -3,6 +3,9 @@ uuid = "a64ab3a6-1e61-46d9-9cad-3303c166b426"
 authors = ["Per Rutquist <per.rutquist@gmail.com> and contributors"]
 version = "0.1.0-DEV"
 
+[deps]
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+
 [compat]
 julia = "1.9"
 
