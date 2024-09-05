@@ -7,6 +7,7 @@ Returns true if a schema should never be given as a reference
 """
 inlineschema(::Type{T}) where {T} = false
 inlineschema(::Type{String}) = true
+inlineschema(::Type{Symbol}) = true
 inlineschema(::Type{<:Real}) = true
 inlineschema(::Type{Nothing}) = true
 inlineschema(::Union) = true
@@ -16,6 +17,7 @@ inlineschema(::NamedTuple) = true
 Returns a schema and a list of types that are referenced from it
 """
 schema_and_subtypes(::Type{String}) = ((type="string",), ())
+schema_and_subtypes(::Type{Symbol}) = ((type="string",), ())
 schema_and_subtypes(::Type{<:Real}) = ((type="number",), ())
 schema_and_subtypes(::Type{<:Integer}) = ((type="integer",), ())
 schema_and_subtypes(::Type{Bool}) = ((type="boolean",), ())
@@ -28,6 +30,33 @@ function schema_and_subtypes(::Type{Vector{T}}) where {T}
     else
         ((type="array", items=schemaref(T)), (T,))
     end
+end
+
+function schema_and_subtypes(::Type{T}) where {T<:Enum}
+    ((type="string", enum=Symbol.(instances(T))), ())
+end
+
+# Note: OpenAI's "Structured Output" API currently does not support
+#       `minIems` so it may give invalid responses for `Tuple`
+#       Therefore `NamedTuple` or `Vector` might be better choices.
+function schema_and_subtypes(::Type{T}) where {T<:Tuple}
+    rt = []
+    pr = []
+
+    for v in T.types
+        if inlineschema(v)
+            s, st = schema_and_subtypes(v)
+            for q in st
+                _setpush!(rt, q)
+            end
+        else
+            s = schemaref(v)
+            _setpush!(rt, v)
+        end
+        push!(pr, s)
+    end
+
+    ((type="array", prefix_items=pr, items=false, minItems=lenght(v), maxItems=length(v)), (rt))
 end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)
@@ -75,7 +104,7 @@ function schema_and_subtypes(T::Union)
         end
     end
 
-    ((anyOf=a,), Tuple(b))
+    ((anyOf=unique(a),), Tuple(b))
 end
 
 function schemaref(T)
@@ -99,6 +128,29 @@ function schema(t)
         i += 1
     end
     NamedTuple{(fieldnames(typeof(s))..., Symbol("\$defs"))}((s..., NamedTuple(ss)))
+end
+
+"""
+Convert to a type, similar to `convert`, but attempts to re-create structs from `Dict`,
+under the assumption that the struct has a default constructor that simply takes
+each field in the order that they appear in the struct (i.e. the defult constructor). 
+
+(Types that do not satisfy this requirement need their own `to_type` method.)
+"""
+to_type(::Type{T}, x) where {T} = convert(T, x)
+to_type(::Type{T}, x::T) where {T} = x
+to_type(::Type{Vector{T}}, v::Vector) where {T} = to_type.(T, v)
+
+function to_type(::Type{T}, d::Dict{String}) where {T}
+    fn = fieldnames(T)
+    ft = T.types
+    T(ntuple(i -> to_type(ft[i], d[string(fn[i])]), length(fn))...)
+end
+
+function to_type(::Type{T}, d::Union{NamedTuple, Dict{Symbol}}) where {T}
+    fn = fieldnames(T)
+    ft = T.types
+    T(ntuple(i -> to_type(ft[i], d[fn[i]]), length(fn))...)
 end
 
 end # module
