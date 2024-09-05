@@ -7,7 +7,7 @@ inlineschema(::Type{Symbol}) = true
 inlineschema(::Type{<:Real}) = true
 inlineschema(::Type{Nothing}) = true
 inlineschema(::Union) = true
-inlineschema(::NamedTuple) = true
+inlineschema(::Type{<:NamedTuple}) = true
 
 """
 Returns a schema and a list of types that are referenced from it
