@@ -30,10 +30,13 @@ end
     o3 = (answer=yes, guide=42.0f0, b=true, f=false, next=nothing)
     o4 = (it=WhichBar(Bar(Foo(3,"hi"), nothing)))
     o5 = (it=WhichBar(NoBar(Foo(3,"hi"), 42)))
+    o6 = [1+2im, 0+0im, -3-4im]
+    o7 = [:Hello, :World]
+    o8 = (; o1, o2, o3, o4, o5, o6, o7)
 
     noS = Schema(json(Structured.schema(typeof((invalid=true,)))))
 
-    for o in (o1, o2, o3, o4, o5)
+    for o in (o1, o2, o3, o4, o5, o6, 07)
         t = typeof(o)
         s = Structured.schema(t)
         js = json(s, 4) # schema as a JSON string
@@ -47,6 +50,7 @@ end
         @test validate(S, pjo) === nothing
         @test validate(noS, pjo) !== nothing
         r = Structured.to_type(t, pjo) # Object restored into type t.
-        @test r === o
+        @test typeof(r) == t
+        @test r == o
     end
 end
