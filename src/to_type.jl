@@ -9,10 +9,13 @@ Such constructs should be avoided.
 """
 to_type(::Type{T}, x) where {T} = convert(T, x)
 to_type(::Type{T}, x::T) where {T} = x
-to_type(::Type{T}, x::Dict{String}) where {T<:Dict{String}} = T(x)
 to_type(::Type{Symbol}, x::String) = Symbol(x)
 to_type(::Type{Vector{T}}, v::Vector) where {T} = T[to_type(T, x) for x in v]
 
+function to_type(::Type{Dict{K,T}}, d::Dict{String}) where {K<:Union{String, Symbol}, T}
+    Dict{K,T}([K(k) => to_type(T, v) for (k,v) in d])
+end
+    
 function to_type(::Type{T}, x::String) where {T<:Enum}
     for i in instances(T) # TODO: Currently, T cannot be a Union of Enums
         if string(i) == x
