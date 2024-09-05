@@ -33,10 +33,14 @@ end
     o6 = [1+2im, 0+0im, -3-4im]
     o7 = [:Hello, :World]
     o8 = (; o1, o2, o3, o4, o5, o6, o7)
+    o9 = Dict("a" => 1, "b" => 2)
+    o10 = Dict{String, Any}("a" => 1, "b" => "two", "c"=>3.0)
+    o11 = Any[1, "two", 3.0]
+    o12 = @NamedTuple{a::Int, b::Any}((1, "two"))
 
     noS = Schema(json(Structured.schema(typeof((invalid=true,)))))
 
-    for o in (o1, o2, o3, o4, o5, o6, 07)
+    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12)
         t = typeof(o)
         s = Structured.schema(t)
         js = json(s, 4) # schema as a JSON string

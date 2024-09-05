@@ -9,6 +9,7 @@ Such constructs should be avoided.
 """
 to_type(::Type{T}, x) where {T} = convert(T, x)
 to_type(::Type{T}, x::T) where {T} = x
+to_type(::Type{T}, x::Dict{String}) where {T<:Dict{String}} = T(x)
 to_type(::Type{Symbol}, x::String) = Symbol(x)
 to_type(::Type{Vector{T}}, v::Vector) where {T} = T[to_type(T, x) for x in v]
 

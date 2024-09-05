@@ -19,15 +19,25 @@ schema_and_subtypes(::Type{<:Integer}) = ((type="integer",), [])
 schema_and_subtypes(::Type{Bool}) = ((type="boolean",), [])
 schema_and_subtypes(::Type{Nothing}) = ((type="null",), [])
 schema_and_subtypes(::Type{Pair}) = error("`Pair` is ambiguous. Use a `NamedTuple` instead.")
+schema_and_subtypes(::Type{Any}) = ("\$comment" => "Any", [])
+
+function schema_and_subtypes(::Type{<:Dict{String, T}}) where {T}
+    s, st = schema_and_subtypes(T)
+    ((type="object", additionalProperties=s), st)
+end
+
+schema_and_subtypes(::Type{Dict{String, Any}}) = ((type="object",), [])
 
 function schema_and_subtypes(::Type{Vector{T}}) where {T}
     if inlineschema(T)
-        s, st = schema_and_subtypes(t)
+        s, st = schema_and_subtypes(T)
         ((type="array", items=s), st)
     else
         ((type="array", items=schemaref(T)), Any[T,])
     end
 end
+
+schema_and_subtypes(::Type{Vector{Any}}) = ((type="array",), [])
 
 function schema_and_subtypes(::Type{T}) where {T<:Enum}
     ((type="string", enum=Symbol.(instances(T))), [])
