@@ -1,6 +1,6 @@
 using Structured
 using Test
-using JSON
+using JSON3
 using JSONSchema
 
 struct Foo
@@ -40,19 +40,19 @@ end
     o13 = Dict("a"=>Foo(1,"a"), "b"=>Foo(2,"b"))
     o14 = Dict(:a=>Foo(1,"a"), :b=>Foo(2,"b"))
 
-    noS = Schema(json(Structured.schema(typeof((invalid=true,)))))
+    noS = Schema(JSON3.write(Structured.schema(typeof((invalid=true,)))))
 
     for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14)
         t = typeof(o)
         s = Structured.schema(t)
-        js = json(s, 4) # schema as a JSON string
-        jo = json(o, 4) # object as a JSON string
+        js = JSON3.write(s) # schema as a JSON string
+        jo = JSON3.write(o) # object as a JSON string
         #println("Schema:")
         #println(js)
         #println("Object:")
         #println(jo)
         S = Schema(js)
-        pjo = JSON.parse(jo) # Object in Dict form
+        pjo = JSON3.read(jo) # Object in JSON3.Object form
         @test validate(S, pjo) === nothing
         @test validate(noS, pjo) !== nothing
         r = Structured.to_type(t, pjo) # Object restored into type t.

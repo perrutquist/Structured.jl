@@ -8,6 +8,7 @@ inlineschema(::Type{<:Real}) = true
 inlineschema(::Type{Nothing}) = true
 inlineschema(::Union) = true
 inlineschema(::Type{<:NamedTuple}) = true
+inlineschema(::Type{Any}) = true
 
 """
 Returns a schema and a list of types that are referenced from it

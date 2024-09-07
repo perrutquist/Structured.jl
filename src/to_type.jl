@@ -1,6 +1,9 @@
+const DictLike = Union{JSON3.Object, Dict{String}}
+const VectorLike = Union{JSON3.Array, Vector}
+
 """
 Convert to a type, similar to `convert`, but attempts to re-create structs from `Dict{String}`,
-under the assumption that the struct has a default constructor that simply takes
+or `JSON3.Object` under the assumption that the struct has a default constructor that simply takes
 each field in the order that they appear in the struct (i.e. the defult constructor). 
 (Types that do not satisfy this requirement need their own `to_type` method.)
 
@@ -10,9 +13,9 @@ Such constructs should be avoided.
 to_type(::Type{T}, x) where {T} = convert(T, x)
 to_type(::Type{T}, x::T) where {T} = x
 to_type(::Type{Symbol}, x::String) = Symbol(x)
-to_type(::Type{Vector{T}}, v::Vector) where {T} = T[to_type(T, x) for x in v]
+to_type(::Type{Vector{T}}, v::VectorLike) where {T} = T[to_type(T, x) for x in v]
 
-function to_type(::Type{Dict{K,T}}, d::Dict{String}) where {K<:Union{String, Symbol}, T}
+function to_type(::Type{Dict{K,T}}, d::DictLike) where {K<:Union{String, Symbol}, T}
     Dict{K,T}([K(k) => to_type(T, v) for (k,v) in d])
 end
     
@@ -25,24 +28,24 @@ function to_type(::Type{T}, x::String) where {T<:Enum}
     error("String $x does not match any instance of the Enum $T.")
 end
 
-function to_type(::Type{T}, d::Dict{String}) where {T}
+function to_type(::Type{T}, d::DictLike) where {T}
     fn = fieldnames(T)
     ft = T.types
     T(ntuple(i -> to_type(ft[i], d[string(fn[i])]), length(fn))...)
 end
 
-function to_type(::Type{T}, d::Dict{String}) where {T <: NamedTuple}
+function to_type(::Type{T}, d::DictLike) where {T <: NamedTuple}
     fn = fieldnames(T)
     ft = T.types
     T(ntuple(i -> to_type(ft[i], d[string(fn[i])]), length(fn)))
 end
 
-function to_type(U::Union, d::Dict{String})
+function to_type(U::Union, d::DictLike)
     ts = _u2ts(U)
     for t in ts 
         # Try each type and return the first that fits
         t <: Union{String, Symbol, Real, Enum, Nothing} && continue # not represented as Dict
-        if Set(string.(fieldnames(t))) == Set(keys(d))
+        if Set(Symbol.(fieldnames(t))) == Set(Symbol.(keys(d)))
             y = try 
                 to_type(t, d)
             catch
