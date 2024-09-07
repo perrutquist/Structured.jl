@@ -2,6 +2,7 @@ using Structured
 using Test
 using JSON3
 using JSONSchema
+using StructTypes
 
 struct Foo
     x::Int
@@ -55,7 +56,7 @@ end
         pjo = JSON3.read(jo) # Object in JSON3.Object form
         @test validate(S, pjo) === nothing
         @test validate(noS, pjo) !== nothing
-        r = Structured.to_type(t, pjo) # Object restored into type t.
+        r = StructTypes.constructfrom(t, pjo) # Object restored into type t.
         @test typeof(r) == t
         @test r == o
     end
