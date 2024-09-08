@@ -69,7 +69,12 @@ end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)
 
+# The general case: Anything that is not an abstract type is treated as a struct
 function schema_and_subtypes(::Type{T}) where {T}
+    if isabstracttype(T)
+        return anyOf_and_subtypes(subtypes(T))
+    end
+
     rt = []
     pr = []
 
@@ -89,7 +94,7 @@ function schema_and_subtypes(::Type{T}) where {T}
     ((type="object", properties=props, additionalProperties=false, required=keys(props)), rt)
 end
 
-function _u2ts(U)
+function schema_and_subtypes(U::Union)
     (; a, b) = U
     ts = [a]
     while b isa Union
@@ -97,10 +102,10 @@ function _u2ts(U)
         pushfirst!(ts, a)
     end
     pushfirst!(ts, b)
+    anyOf_and_subtypes(ts)
 end
 
-function schema_and_subtypes(U::Union)
-    ts = _u2ts(U)
+function anyOf_and_subtypes(ts)
     a = []
     b = []
     for t in ts

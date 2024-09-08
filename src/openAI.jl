@@ -1,16 +1,11 @@
 @enum Role system user assistant
 
-struct Message
-    role::Role
-    content::String
+const default_model = "gpt-4o-2024-08-06"
+
+function response_format(t, name="response")
+    (type="json_schema", json_schema=(name=name, schema=schema(t), strict=true))
 end
 
-const default_model = "gpt-4o-latest"
-
-function response_format(t)
-    (type="json_schema", json_schema=schema(t))
-end
-
-function structured_completions(T, messages::Vector{Message}; model=default_model)
-    # TODO
+function get_choices(T, response)
+    T[JSON3.read(r.message.content, T) for r in response.response.choices]
 end

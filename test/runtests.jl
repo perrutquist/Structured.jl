@@ -2,14 +2,15 @@ using Structured
 using Test
 using JSON3
 using JSONSchema
-using StructTypes
 
-struct Foo
+abstract type FooOrBar end
+
+struct Foo <: FooOrBar
     x::Int
     y::String
 end
 
-struct Bar
+struct Bar <: FooOrBar
     foo::Foo
     next::Union{Bar, Nothing}
 end
@@ -21,6 +22,10 @@ end
 
 struct WhichBar
     tst::Union{Bar, NoBar}
+end
+
+struct WhichFB
+    tst::FooOrBar
 end
 
 @enum YN yes no
@@ -40,10 +45,15 @@ end
     o12 = @NamedTuple{a::Int, b::Any}((1, "two"))
     o13 = Dict("a"=>Foo(1,"a"), "b"=>Foo(2,"b"))
     o14 = Dict(:a=>Foo(1,"a"), :b=>Foo(2,"b"))
+    o15a = Union{Foo,Bar}[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
+
+    # For now it is better to use Union than absstract type...
+    o15b = FooOrBar[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
+    @test_throws ArgumentError JSON3.read(JSON3.write(o15b), typeof(o15b))
 
     noS = Schema(JSON3.write(Structured.schema(typeof((invalid=true,)))))
 
-    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14)
+    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15a)
         t = typeof(o)
         s = Structured.schema(t)
         js = JSON3.write(s) # schema as a JSON string
@@ -56,7 +66,8 @@ end
         pjo = JSON3.read(jo) # Object in JSON3.Object form
         @test validate(S, pjo) === nothing
         @test validate(noS, pjo) !== nothing
-        r = StructTypes.constructfrom(t, pjo) # Object restored into type t.
+        #r = StructTypes.constructfrom(t, pjo) # Object restored into type t.
+        r = JSON3.read(jo, t) # skip StructTypes
         @test typeof(r) == t
         @test r == o
     end
