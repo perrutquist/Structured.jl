@@ -1,11 +1,17 @@
 # Structured.jl
 
-Structured.jl is a Julia package to create JSON schemas from Julia types for the "Structured outputs" feature 
-of the OpenAI API.
+Structured.jl is a Julia package to create JSON schemas from Julia types for the [Structured outputs https://platform.openai.com/docs/guides/structured-outputs/structured-outputs] feature  of the OpenAI API.
 
 It also contains a few convenience functions for use with OpenAI.jl
 
-# Supported Types
+This makes it possible to extract replies from the OpenAI API in the form of a specific Julia type, 
+rather just free text or JSON.
+
+The prompt should instruct the AI to reply with JSON representing the required object, and explain what
+the fields should represent. It is recommended that the type name and field names are carefully chosen, 
+as they will influence the AI.
+
+## Supported Types
 
 - User created `struct` types with supported types in all fields and default constructors
 - `String`, `Symbol`, `Enum`
@@ -19,13 +25,13 @@ It also contains a few convenience functions for use with OpenAI.jl
 - `Union` of supported types.
 - `Any` (Results in an empty schema.)
 
-# Unsupported Types
+## Unsupported Types
 
 - `Tuple` is not supported. Use `Vector` or `NamedTuple` instead.
 - Abstract types are not supported. Use `Union` instead.
 - `Val`, `Missing`, and other singleton types. Use single-value `Enum` instead.
 
-# Example
+## Example
 
 This example is based on the "Chain of thought" example at https://platform.openai.com/docs/guides/structured-outputs/examples
 
@@ -48,7 +54,7 @@ reply = OpenAI.create_chat(
     "gpt-4o-2024-08-06",
     [ system => "You are a helpful math tutor. Guide the user through the solution step by step.",
       user => "how can I solve 8x + 7 = -23" ],
-    response_format = response_format(MathReasoning, "MathReasoning"),
+    response_format = response_format(MathReasoning),
     n = 1
 )
 
