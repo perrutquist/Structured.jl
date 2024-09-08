@@ -4,6 +4,7 @@ Returns true if a schema should never be given as a reference
 inlineschema(::Type{T}) where {T} = false
 inlineschema(::Type{String}) = true
 inlineschema(::Type{Symbol}) = true
+inlineschema(::Type{Char}) = true
 inlineschema(::Type{<:Real}) = true
 inlineschema(::Type{Nothing}) = true
 inlineschema(::Union) = true
@@ -19,8 +20,14 @@ schema_and_subtypes(::Type{<:Real}) = ((type="number",), [])
 schema_and_subtypes(::Type{<:Integer}) = ((type="integer",), [])
 schema_and_subtypes(::Type{Bool}) = ((type="boolean",), [])
 schema_and_subtypes(::Type{Nothing}) = ((type="null",), [])
-schema_and_subtypes(::Type{Pair}) = error("`Pair` is ambiguous. Use a `NamedTuple` instead.")
+schema_and_subtypes(::Type{<:Pair}) = throw(ArgumentError("`Pair` is ambiguous. Use a `NamedTuple` instead."))
+schema_and_subtypes(::Type{<:Ptr}) = throw(ArgumentError("`Ptr` has no schema. (Pointers are not supported by JSON.)"))
 schema_and_subtypes(::Type{Any}) = ("\$comment" => "Any", [])
+
+# Note: OpenAI's "Structured Output" API currently does not support
+#       `minLength` and `maxLength` so it may give invalid responses for `Char`
+#       Therefore `String` might be a better choice.
+schema_and_subtypes(::Type{Char}) = ((type="string",), [])
 
 function schema_and_subtypes(::Type{<:Dict{<:Union{String, Symbol}, T}}) where {T}
     s, st = schema_and_subtypes(T)
@@ -69,12 +76,13 @@ end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)
 
-# The general case: Anything that is not an abstract type is treated as a struct
+# The general case: Everything that is not an abstract type is treated as a struct
 function schema_and_subtypes(::Type{T}) where {T}
     if isabstracttype(T)
-        return anyOf_and_subtypes(subtypes(T))
+        #return anyOf_and_subtypes(subtypes(T)) # requires InteractiveUtils
+        throw(ArgumentError("Schemas of abstract types are not supported at the moment"))
     end
-
+ 
     rt = []
     pr = []
 

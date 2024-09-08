@@ -46,6 +46,7 @@ end
     o13 = Dict("a"=>Foo(1,"a"), "b"=>Foo(2,"b"))
     o14 = Dict(:a=>Foo(1,"a"), :b=>Foo(2,"b"))
     o15a = Union{Foo,Bar}[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
+    o16 = Char['h', 'e', 'l', 'l', 'o']
 
     # For now it is better to use Union than absstract type...
     o15b = FooOrBar[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
@@ -53,7 +54,7 @@ end
 
     noS = Schema(JSON3.write(Structured.schema(typeof((invalid=true,)))))
 
-    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15a)
+    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15a, o16)
         t = typeof(o)
         s = Structured.schema(t)
         js = JSON3.write(s) # schema as a JSON string
@@ -71,4 +72,7 @@ end
         @test typeof(r) == t
         @test r == o
     end
+
+    @test_throws ArgumentError Structured.schema(Ptr{Int})
+    @test_throws ArgumentError Structured.schema(typeof(:a => 1))
 end
