@@ -1,11 +1,11 @@
 # Structured.jl
 
-Structured.jl is a Julia package to create JSON schemas from Julia types for the [Structured outputs https://platform.openai.com/docs/guides/structured-outputs/structured-outputs] feature  of the OpenAI API.
+Structured.jl is a Julia package to create JSON schemas from Julia types for the [Structured outputs](https://platform.openai.com/docs/guides/structured-outputs/structured-outputs) feature  of the OpenAI API.
 
 It also contains a few convenience functions for use with OpenAI.jl
 
 This makes it possible to extract replies from the OpenAI API in the form of a specific Julia type, 
-rather just free text or JSON.
+rather free text or JSON.
 
 The prompt should instruct the AI to reply with JSON representing the required object, and explain what
 the fields should represent. It is recommended that the type name and field names are carefully chosen, 
