@@ -9,10 +9,35 @@ Base.:(=>)(r::Role, c::String) = Message(r, c)
 
 const default_model = "gpt-4o-2024-08-06"
 
-function response_format(t, name=string(t))
-    (type="json_schema", json_schema=(name=name, schema=schema(t), strict=true))
+struct ResponseFormat{T} 
+    type::String
+    json_schema::T
 end
 
+"""
+    response_format(T)
+
+Calls `schema(T)` to obtain a JSON schema for Julia type `T`, and wraps it
+in a `ResponseFormat` object that is designed to be passed as the `response_format` 
+keyword argument of the `OpenAI.create_chat` function.
+
+Note: When using the response_format keyword argument the AI must also be instructed
+to output JSON. See the OpenAI API documentation on Structured output.
+"""
+function response_format(t, name=string(t))
+    ResponseFormat("json_schema", (name=name, schema=schema(t), strict=true))
+end
+
+"""
+    get_choices(T, response)
+
+Extract, as type `T`, the replies from the `response` from the `OpenAI.create_chat` function.
+
+Assumes that `create_chat` was called with the keyword argument `response_format = response_format(T)`.
+
+Tip: If `create_chat` was called with `n = 1` (the default), then get_choice(T, response) can be used
+as a shorthand for only(get_choices(T, response)).
+"""
 function get_choices(T, response)
     [_get_choice(T, c)::T for c in response.response.choices]
 end
@@ -23,3 +48,10 @@ function _get_choice(T, c)
     hasproperty(c.message, :refusal) && !isnothing(c.message.refusal) && error("Refused with message: ", c.message.refusal)
     JSON3.read(c.message.content, T)
 end
+
+"""
+    get_choice(T, response)
+
+Shorthand for `only(get_choices(T, response))`.
+"""
+get_choice(T, response) = only(get_choices(T, response))

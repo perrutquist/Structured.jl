@@ -1,5 +1,7 @@
 """
-Returns true if a schema should never be given as a reference
+    inlineschema(T)
+
+Returns `true` if a schema for type `T` should be inline rather than a reference.
 """
 inlineschema(::Type{T}) where {T} = false
 inlineschema(::Type{String}) = true
@@ -12,7 +14,15 @@ inlineschema(::Type{<:NamedTuple}) = true
 inlineschema(::Type{Any}) = true
 
 """
-Returns a schema and a list of types that are referenced from it
+    (schema, subtypes) = schema_and_subtypes(T)
+
+Returns a schema for type `T` and a list of types that are referenced from it.
+
+The schema is in the form of a `NamedTuple` or `Pair` that will result in the correct
+JSON schema when passed through the `JSON3.write` function.
+    
+If schemas are required for the fields or subtypes of `T` then those are either inlined 
+in the returned schema, or the types are listed in the second output.
 """
 schema_and_subtypes(::Type{String}) = ((type="string",), [])
 schema_and_subtypes(::Type{Symbol}) = ((type="string",), [])
@@ -137,7 +147,16 @@ function schemaref(T)
 end
 
 """
-A schema including a set of references with schemas.
+    schema(T)
+
+Returns a schema for type `T`, possibly including a set of references with schemas.
+
+The schema is in the form of a `NamedTuple` that will result in the correct
+JSON schema when passed through the `JSON3.write` function.
+
+Note: Not all Julia types are supported, nor are the all schemas for supported types 
+one-to-one matches. It is possible that a JSON object matching the schema still does
+not parse into as type `T`.
 """
 function schema(t)
     s, ts = schema_and_subtypes(t)
