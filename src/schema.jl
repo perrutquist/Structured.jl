@@ -4,7 +4,7 @@
 Returns `true` if a schema for type `T` should be inline rather than a reference.
 """
 inlineschema(::Type{T}) where {T} = false
-inlineschema(::Type{String}) = true
+inlineschema(::Type{<:AbstractString}) = true
 inlineschema(::Type{Symbol}) = true
 inlineschema(::Type{Char}) = true
 inlineschema(::Type{<:Real}) = true
@@ -57,7 +57,7 @@ end
 
 schema_and_subtypes(::Type{Vector{Any}}) = ((type="array",), [])
 
-function schema_and_subtypes(::Type{T}) where {T<:Enum}
+function schema_and_subtypes(::Type{T}) where {T<:Union{Enum, Option}}
     ((type="string", enum=Symbol.(instances(T))), [])
 end
 

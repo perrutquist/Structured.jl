@@ -83,5 +83,5 @@ end
     @test_throws ArgumentError Structured.schema(Ptr{Int})
     @test_throws ArgumentError Structured.schema(typeof(:a => 1))
 
-    @test JSON3.write(response_format(typeof((a=1,)), "response")) == "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"response\",\"schema\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"}},\"additionalProperties\":false,\"required\":[\"a\"]},\"strict\":true}}"
+    @test JSON3.write(Structured.response_format(typeof((a=1,)), "response")) == "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"response\",\"schema\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"}},\"additionalProperties\":false,\"required\":[\"a\"]},\"strict\":true}}"
 end

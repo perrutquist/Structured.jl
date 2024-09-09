@@ -1,27 +1,24 @@
 ## Another Example
 
-Single-value enums can be used to force the AI to output certain constants, essentially making it give instructions to itself.
+A single-value `Option` (or `Enum`) can be used to force the AI to output certain constants, essentially making it give instructions to itself.
 
 ```julia
-using Structured: system, user, assistant, response_format, get_choices, get_choice
+using Structured: system, user, assistant, response_format, get_choices, get_choice, Option
 using OpenAI
 
-@enum Julia julia
-@enum Markdown markdown
-
-struct CodeExample
-    documentation::Documentation
-    code::Code
-end
-
 struct Documentation
-    language::Markdown
+    language::Option{(:Markdown,)}
     content::String
 end
 
 struct Code
-    language::Julia
+    language::Option{(:Julia,)}
     content::String
+end
+
+struct CodeExample
+    documentation::Documentation
+    code::Code
 end
 
 reply = OpenAI.create_chat(
@@ -37,7 +34,9 @@ choice = get_choice(CodeExample, reply) # Returns a Vector{MathReasoning} of len
 println(choice.documentation.content) 
 println(choice.code.content)
 ```
-Example output:
+
+## Example output (AI-generated sorting documentation and code)
+
 ```markdown
 # QuickSort Algorithm
 
@@ -51,18 +50,6 @@ Quicksort is an efficient, recursive divide-and-conquer sorting algorithm. It's 
 This recursive nature ensures a clean and efficient sort, with its performance significantly reliant on the choice of the pivot (randomized or median approaches often work well). Quicksort is well-suited for sorting large datasets and is commonly used in many standard libraries.
 ```
 ```julia
-# QuickSort Algorithm
-
-Quicksort is an efficient, recursive divide-and-conquer sorting algorithm. It's not a stable sort but is practical for many cases due to its average O(n log n) complexity. It works by selecting a 'pivot' element from the array and partitioning the other elements into two sub-arrays, according to whether they are less than or greater than the pivot. The sub-arrays are then sorted recursively.
-
-## Key Steps:
-1. Choose a pivot from the list.
-2. Partition the list into two sub-arrays: elements less than the pivot and elements greater than the pivot.
-3. Recursively apply the above steps to the sub-arrays.
-
-This recursive nature ensures a clean and efficient sort, with its performance significantly reliant on the choice of the pivot (randomized or median approaches often work well). Quicksort is well-suited for sorting large datasets and is commonly used in many standard libraries.
-
-julia> println(choice.code.content)
 # QuickSort implemented in Julia
 
 function partition!(arr, low, high)

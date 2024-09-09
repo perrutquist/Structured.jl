@@ -1,5 +1,19 @@
+"""
+Role
+
+An `Enum` that deines the roles used by ChatGPT.
+"""
 @enum Role system user assistant
 
+"""
+Message
+
+A type with a layout such that a `Vector{Message}` turns into the correct JSON for ChatGPT.
+
+The `=>` operator can be used to construct a `Message`. 
+
+For example: `system => "You are a helpful assistant."`
+"""
 struct Message
     role::Role
     content::String
