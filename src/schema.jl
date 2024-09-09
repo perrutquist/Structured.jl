@@ -11,6 +11,7 @@ inlineschema(::Type{<:Real}) = true
 inlineschema(::Type{Nothing}) = true
 inlineschema(::Union) = true
 inlineschema(::Type{<:NamedTuple}) = true
+inlineschema(::Type{<:Dict}) = true
 inlineschema(::Type{Any}) = true
 
 """

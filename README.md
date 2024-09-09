@@ -29,6 +29,15 @@ as they will influence the AI.
 - Abstract types are not supported. Use `Union` instead.
 - `Val`, `Missing`, and other singleton types. Use single-value `Enum` instead.
 
+## Type names matter!
+
+The LLM will see the names of the user created `struct` types that are used, as well as their field names.
+
+(Is the JSON schema itself is part of the input to the LLM? The OpenAI documentation is not entirely clear on this.)
+
+Therefore, it is often best to create entirely new types for use with structured output, rather than re-using
+existing types that may have names (and/or field names) that might be less helpful to the LLM.
+
 ## Example
 
 This example is based on the "Chain of thought" example at https://platform.openai.com/docs/guides/structured-outputs/examples
