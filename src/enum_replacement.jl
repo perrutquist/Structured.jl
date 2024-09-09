@@ -34,7 +34,9 @@ Base.string(o::Option) = string(o.s)
 function Base.show(io::IO, o::Option{T}) where {T} 
     print(io, "Option{")
     show(io, T)
-    print(io, "}(", o.s ,")")
+    print(io, "}(")
+    show(io, o.s)
+    print(io, ")")
 end
 
 Base.ncodeunits(o::Option) = ncodeunits(string(o))
