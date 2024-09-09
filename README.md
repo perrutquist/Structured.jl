@@ -6,7 +6,7 @@ It also contains a few convenience functions to enable the use of these schemas 
 making it possible to extract replies from the Large Language Model in the form of a specific Julia type, rather than text or JSON.
 
 The prompt should instruct the AI to reply with JSON representing the required object, and explain what
-each field represents. It is recommended that the type name and field names are carefully chosen, 
+each field represents. It is recommended that the type names and field names are carefully chosen, 
 as they will influence the AI.
 
 ## Supported Types
@@ -35,8 +35,8 @@ The LLM will see the names of the user created `struct` types that are used, as 
 
 (Is the JSON schema itself is part of the input to the LLM? The OpenAI documentation is not entirely clear on this.)
 
-Therefore, it is often best to create entirely new types for use with structured output, rather than re-using
-existing types that may have names (and/or field names) that might be less helpful to the LLM.
+Therefore, it is often best to create entirely new types for use with structured output, rather than using `NamedTuple` or 
+re-using existing types that may have names (and/or field names) that might be less helpful to the LLM.
 
 ## Example
 
