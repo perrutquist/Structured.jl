@@ -87,34 +87,3 @@ MathReasoning
       output: String "x = -\\frac{15}{4}"
   final_answer: String "x = -\\frac{15}{4}"
 ```
-
-## Tip
-
-Since types are constants in Julia, it can be convenient to use NamedTuples instead. This allows for changing the
-layout during development, without the need to restart Julia.
-
-Instead of the constant:
-
-```julia
-struct Address
-    street::String
-    number::Int
-end
-```
-
-one can create a variable:
-
-```julia
-Address = @NamedTuple begin
-    street::String
-    number::Int
-end
-```
-
-The variable name can then be passed as a second argument to `response_format` in order that it be included.
-```
-reply = OpenAI.create_chat(
-    ...
-    response_format = response_format(Address, "Address"),
-)
-```
