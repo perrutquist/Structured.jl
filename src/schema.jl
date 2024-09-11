@@ -131,10 +131,10 @@ function schema_and_subtypes(::Union{StructTypes.UnorderedStruct,StructTypes.Ord
             s = schemaref(v)
             _setpush!(rt, v)
         end
-        push!(pr, k => s)
+        push!(pr, k => withdescription(s, _getdoc(T, k)))
     end
     props = NamedTuple(pr) 
-    ((type="object", properties=props, additionalProperties=false, required=keys(props)), rt)
+    (withdescription((type="object", properties=props, additionalProperties=false, required=keys(props)), _getdoc(T)), rt)
 end
 
 function anyOf_and_subtypes(ts)
@@ -187,3 +187,18 @@ function schema(t)
     end
     NamedTuple{(fieldnames(typeof(s))..., Symbol("\$defs"))}((s..., NamedTuple(ss)))
 end
+
+function withdescription(o::NamedTuple, descr::String)
+    fn = fieldnames(typeof(o))
+    if fn[end] == :description
+        typeof(o)((o[1:end-1]..., string(descr, " [", o[end], "]")))
+    else
+        NamedTuple{(fn..., :description)}((o..., descr))
+    end
+end
+
+function withdescription(o::Pair, descr::String)
+    NamedTuple{(Symbol(first(o)), :description)}((last(o), descr))
+end
+
+withdescription(o::NamedTuple, ::Nothing) = o

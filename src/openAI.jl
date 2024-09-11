@@ -69,5 +69,5 @@ end
 
 Equivalent to `only(get_choices(T, response))`.
 """
-get_choice(T, response) = _get_choices(T, only(response.response.choices))
+get_choice(T, response) = _get_choice(T, only(response.response.choices))
 get_choice(T) = Base.Fix1(get_choice, T)
