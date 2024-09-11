@@ -1,13 +1,14 @@
 """
     _getdoc(T)
 
-Get the docstring for a type, as a text string.
+Get the docstring for a user type, as a text string.
 Returns `nothing` unless exactly one docstring was found.
+Also returns `nothing` for types in Base/Core.
 (Relies on undocumented Julia internals)
 """
 function _getdoc(::Type{T}) where {T}
     try
-        only(only(Docs.doc(T).meta[:results]).text)
+        T.name.module in (Base, Core) ? nothing : only(only(Docs.doc(T).meta[:results]).text)
     catch
         nothing
     end

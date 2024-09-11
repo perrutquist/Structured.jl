@@ -29,20 +29,62 @@ as they will influence the AI.
 - Abstract types are not supported. Use `Union` instead.
 - `Val`, `Missing`, and other singleton types. Use single-value `Enum` instead.
 
-## Type names matter!
+## Type names and docstrings matter!
 
-The LLM will see the names of the user created `struct` types that are used, as well as their field names.
+The Large Language Model (LLM) will see the names of the user created `struct` types that are used, as well as their field names, and docstrings.
 
-(Is the JSON schema itself is part of the input to the LLM? The OpenAI documentation is not entirely clear on this.)
+Individual fields can have docstrings, if the type itself has one.
 
 Therefore, it is often best to create entirely new types for use with structured output, rather than using `NamedTuple` or 
-re-using existing types that may have names (and/or field names) that might be less helpful to the LLM.
+re-using existing types that may have names, field names, and docstrings that might be less helpful to the LLM.
 
 ## Example
 
-This example is based on the "Chain of thought" example at https://platform.openai.com/docs/guides/structured-outputs/examples
+In the below example, the prompt gives no hint as to what is expected, yet the returned data fit the documented type.
 
 (Note: It is not possible to run this example without an API key from OpenAI.)
+
+```julia
+using Structured: system, user, assistant, response_format, get_choices, OneOf
+using OpenAI
+
+"A capital city"
+struct CC
+    "the city"
+    a::String
+    "the country"
+    b::String
+end
+
+choices = OpenAI.create_chat(
+    ENV["OPENAI_API_KEY"],
+    "gpt-4o-2024-08-06",
+    [ system => "Let's roll.",
+      user => "Give me some JSON!" ],
+    response_format = response_format(CC),
+    n = 3
+) |> get_choices(CC)
+
+dump(choices)
+```
+
+Example response:
+```
+Array{CC}((3,))
+  1: CC
+    a: String "Accra"
+    b: String "Ghana"
+  2: CC
+    a: String "Paris"
+    b: String "France"
+  3: CC
+    a: String "Tokyo"
+    b: String "Japan"
+```
+
+## Another example
+
+This is a Julia version of the "Chain of thought" example at https://platform.openai.com/docs/guides/structured-outputs/examples
 
 ```julia
 using Structured: system, user, assistant, response_format, get_choices

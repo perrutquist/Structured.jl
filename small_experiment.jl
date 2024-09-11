@@ -1,4 +1,4 @@
-using Structured: system, user, assistant, response_format, get_choice, OneOf
+using Structured: system, user, assistant, response_format, get_choices, OneOf
 using OpenAI
 
 "A capital city"
@@ -9,13 +9,13 @@ struct CC
     b::String
 end
 
-choice = OpenAI.create_chat(
+choices = OpenAI.create_chat(
     ENV["OPENAI_API_KEY"],
     "gpt-4o-2024-08-06",
-    [ system => "You're a helpful assistant.",
+    [ system => "Let's roll.",
       user => "Give me some JSON!" ],
     response_format = response_format(CC),
-    n = 1
-) |> get_choice(CC)
+    n = 3
+) |> get_choices(CC)
 
-dump(choice)
+dump(choices)
