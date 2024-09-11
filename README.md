@@ -5,9 +5,14 @@ Structured.jl is a Julia package to create JSON schemas from Julia types for the
 It also contains a few convenience functions to enable the use of these schemas together with the [OpenAI.jl](https://github.com/JuliaML/OpenAI.jl) package,
 making it possible to extract replies from the Large Language Model in the form of a specific Julia type, rather than text or JSON.
 
-The prompt should instruct the AI to reply with JSON representing the required object, and explain what
-each field represents. It is recommended that the type names and field names are carefully chosen, 
-as they will influence the AI.
+## Type names and docstrings matter!
+
+The Large Language Model (LLM) will see the names of the user created `struct` types that are used, as well as their field names, and docstrings.
+
+Individual fields can have docstrings, if the type itself has one.
+
+Therefore, it is often best to create entirely new types for use with structured output, rather than using `NamedTuple` or 
+re-using existing types that may have names, field names, and docstrings that might be less helpful to the LLM.
 
 ## Supported Types
 
@@ -16,7 +21,7 @@ as they will influence the AI.
 - `Bool`
 - `Int`, and other subtypes of `Integer`
 - `Float64` and other subtypes of `Real`
-- `Nothing` (maps to `null` in JSON)
+- `Nothing`, `Missing` (map to `null` in JSON)
 - `NamedTuple` containing supported types
 - `Dict{S, T}` where `S<:Union{String, Symbol}` and `T` is a supported type
 - `Vector{T}` of supported type `T`
@@ -27,20 +32,11 @@ as they will influence the AI.
 
 - `Tuple` is not supported. Use `Vector` or `NamedTuple` instead.
 - Abstract types are not supported. Use `Union` instead.
-- `Val`, `Missing`, and other singleton types. Use single-value `Enum` instead.
-
-## Type names and docstrings matter!
-
-The Large Language Model (LLM) will see the names of the user created `struct` types that are used, as well as their field names, and docstrings.
-
-Individual fields can have docstrings, if the type itself has one.
-
-Therefore, it is often best to create entirely new types for use with structured output, rather than using `NamedTuple` or 
-re-using existing types that may have names, field names, and docstrings that might be less helpful to the LLM.
+- `Val`, and other singleton types. Use single-value `Enum` instead.
 
 ## Example
 
-In the below example, the prompt gives no hint as to what is expected, yet the returned data fit the documented type.
+In the below example, the prompt gives no hint as to what is expected, yet the returned data fits the documented type.
 
 (Note: It is not possible to run this example without an API key from OpenAI.)
 
@@ -63,7 +59,7 @@ choices = OpenAI.create_chat(
       user => "Give me some JSON!" ],
     response_format = response_format(CC),
     n = 3
-) |> get_choices(CC)
+) |> get_choices(CC) # Returns a Vector{CC}
 
 dump(choices)
 ```
