@@ -58,16 +58,14 @@ struct MathReasoning
     final_answer::String
 end
 
-reply = OpenAI.create_chat(
+choices = OpenAI.create_chat(
     ENV["OPENAI_API_KEY"],
     "gpt-4o-2024-08-06",
     [ system => "You are a helpful math tutor. Guide the user through the solution step by step.",
       user => "how can I solve 8x + 7 = -23" ],
     response_format = response_format(MathReasoning),
     n = 1
-)
-
-choices = get_choices(MathReasoning, reply) # Returns a Vector{MathReasoning} of length n
+) |> get_choices(MathReasoning) # Returns a Vector{MathReasoning} of length n
 
 dump(choices[1]) # display the result
 ```

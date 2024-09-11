@@ -55,6 +55,7 @@ as a shorthand for only(get_choices(T, response)).
 function get_choices(T, response)
     [_get_choice(T, c)::T for c in response.response.choices]
 end
+get_choices(T) = Base.Fix1(get_choices, T)
 
 function _get_choice(T, c)
     c.finish_reason == "length" && error("JSON output not complete due to length limit.")
@@ -66,6 +67,7 @@ end
 """
     get_choice(T, response)
 
-Shorthand for `only(get_choices(T, response))`.
+Equivalent to `only(get_choices(T, response))`.
 """
-get_choice(T, response) = only(get_choices(T, response))
+get_choice(T, response) = _get_choices(T, only(response.response.choices))
+get_choice(T) = Base.Fix1(get_choice, T)
