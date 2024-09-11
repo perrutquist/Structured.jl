@@ -29,16 +29,28 @@ If schemas are required for the fields or subtypes of `T` then those are either 
 in the returned schema, or the types are listed in the second output.
 """
 function schema_and_subtypes(::Type{T}) where {T} 
-    if isabstracttype(T)
+    ST = StructTypes.StructType(T)
+    if ST == StructTypes.UnorderedStruct() && isabstracttype(T)
         #return anyOf_and_subtypes(subtypes(T)) # requires InteractiveUtils
         throw(ArgumentError("Schemas of abstract types are not supported at the moment"))
     end
-    schema_and_subtypes(StructTypes.StructType(T), T)
+    schema_and_subtypes(ST, T)
 end
 
 schema_and_subtypes(::Type{Any}) = ("\$comment" => "Any", [])
 schema_and_subtypes(::Type{<:Pair}) = throw(ArgumentError("`Pair` is ambiguous. Use a `NamedTuple` instead."))
 schema_and_subtypes(::Type{<:Ptr}) = throw(ArgumentError("`Ptr` has no schema. (Pointers are not supported by JSON.)"))
+
+function schema_and_subtypes(U::Union)
+    (; a, b) = U
+    ts = [a]
+    while b isa Union
+        (; a, b) = b
+        pushfirst!(ts, a)
+    end
+    pushfirst!(ts, b)
+    anyOf_and_subtypes(ts)
+end
 
 schema_and_subtypes(::StructTypes.StringType, _) = ((type="string",), [])
 schema_and_subtypes(::Type{Symbol}) = ((type="string",), [])
@@ -104,6 +116,7 @@ end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)
 
+# User-defined struct
 function schema_and_subtypes(::Union{StructTypes.UnorderedStruct,StructTypes.OrderedStruct}, ::Type{T}) where {T}
     rt = []
     pr = []
@@ -122,17 +135,6 @@ function schema_and_subtypes(::Union{StructTypes.UnorderedStruct,StructTypes.Ord
     end
     props = NamedTuple(pr) 
     ((type="object", properties=props, additionalProperties=false, required=keys(props)), rt)
-end
-
-function schema_and_subtypes(U::Union)
-    (; a, b) = U
-    ts = [a]
-    while b isa Union
-        (; a, b) = b
-        pushfirst!(ts, a)
-    end
-    pushfirst!(ts, b)
-    anyOf_and_subtypes(ts)
 end
 
 function anyOf_and_subtypes(ts)
