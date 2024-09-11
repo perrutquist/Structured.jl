@@ -54,7 +54,7 @@ end
     o16 = Char['h', 'e', 'l', 'l', 'o']
     o17 = Baz("hi", 2)
     o18 = Baz(Foo(1,"hi"), 2)
-    o19 = [Structured.Option{(:yes, :no)}(:yes),]
+    o19 = [Structured.OneOf{(:yes, :no)}(:yes),]
 
     # For now it is better to use Union than absstract type...
     o15b = FooOrBar[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]

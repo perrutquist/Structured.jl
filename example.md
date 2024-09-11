@@ -1,18 +1,18 @@
 ## Another Example
 
-A single-value `Option` (or `Enum`) can be used to force the AI to output certain constants, essentially making it give instructions to itself.
+A single-value `OneOf` (or `Enum`) can be used to force the AI to output certain constants, essentially making it give instructions to itself.
 
 ```julia
-using Structured: system, user, assistant, response_format, get_choices, get_choice, Option
+using Structured: system, user, assistant, response_format, get_choices, get_choice, OneOf
 using OpenAI
 
 struct Documentation
-    language::Option{(:Markdown,)}
+    language::OneOf{(:Markdown,)}
     content::String
 end
 
 struct Code
-    language::Option{(:Julia,)}
+    language::OneOf{(:Julia,)}
     content::String
 end
 

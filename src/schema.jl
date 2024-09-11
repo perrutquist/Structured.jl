@@ -87,7 +87,7 @@ function schema_and_subtypes(::StructTypes.ArrayType, T)
     end
 end
 
-function schema_and_subtypes(::StructTypes.StringType, ::Type{T}) where {T<:Union{Enum, Option}}
+function schema_and_subtypes(::StructTypes.StringType, ::Type{T}) where {T<:Union{Enum, OneOf}}
     ((type="string", enum=Symbol.(instances(T))), [])
 end
 
