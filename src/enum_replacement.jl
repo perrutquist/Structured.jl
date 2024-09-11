@@ -15,7 +15,7 @@ Option{(:yes, :no)}(:yes)   # ok
 Option{(:yes, :no)}(:maybe) # error
 ```
 """
-struct Option{T} <: AbstractString
+struct Option{T}
     s::Symbol
     function Option{T}(s::Symbol) where {T}
         T isa NTuple{N, Symbol} where N || error("Options list must be a tuple of symbols.")
@@ -30,6 +30,10 @@ Option{T}(x::AbstractString) where {T} = Option{T}(Symbol(x))
 
 Base.Symbol(o::Option) = o.s
 Base.string(o::Option) = string(o.s)
+Base.:(==)(a::Symbol, b::Option) = a == b.s 
+Base.:(==)(a::Option, b::Symbol) = a.s == b 
+
+StructTypes.StructType(::Type{<:Option}) = StructTypes.StringType()
 
 function Base.show(io::IO, o::Option{T}) where {T} 
     print(io, "Option{")
@@ -38,12 +42,6 @@ function Base.show(io::IO, o::Option{T}) where {T}
     show(io, o.s)
     print(io, ")")
 end
-
-Base.ncodeunits(o::Option) = ncodeunits(string(o))
-Base.codeunits(o::Option, i::Integer) = codeunits(string(o), i)
-Base.length(o::Option) = length(string(o))
-Base.isvalid(o::Option, i::Integer) = isvalid(string(o), i)
-Base.iterate(o::Option, i::Integer=1) = iterate(string(o), i)
 
 function Base.instances(::Type{Option{T}}) where {T}
     Option{T}.(T)

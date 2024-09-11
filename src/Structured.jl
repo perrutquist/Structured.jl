@@ -1,6 +1,6 @@
 module Structured
 
-using JSON3
+using JSON3, StructTypes
 
 include("enum_replacement.jl") # `Option` as a replacement for `Enum`
 include("schema.jl")  # generate a JSON schema from a Julia type

@@ -3,16 +3,19 @@
 
 Returns `true` if a schema for type `T` should be inline rather than a reference.
 """
-inlineschema(::Type{T}) where {T} = false
-inlineschema(::Type{<:AbstractString}) = true
-inlineschema(::Type{Symbol}) = true
-inlineschema(::Type{Char}) = true
-inlineschema(::Type{<:Real}) = true
-inlineschema(::Type{Nothing}) = true
+inlineschema(::Type{T}) where {T} = inlineschema(StructTypes.StructType(T), T)
 inlineschema(::Union) = true
-inlineschema(::Type{<:NamedTuple}) = true
-inlineschema(::Type{<:Dict}) = true
 inlineschema(::Type{Any}) = true
+
+inlineschema(::StructTypes.StringType, _) = true
+inlineschema(::StructTypes.NumberType, _) = true
+inlineschema(::StructTypes.BoolType, _) = true
+inlineschema(::StructTypes.NullType, _) = true
+inlineschema(::StructTypes.DictType, _) = true
+inlineschema(::StructTypes.UnorderedStruct, _) = false
+inlineschema(::StructTypes.OrderedStruct, _) = false
+inlineschema(::StructTypes.UnorderedStruct, ::Type{<:NamedTuple}) = true
+inlineschema(::StructTypes.ArrayType, _) = true
 
 """
     (schema, subtypes) = schema_and_subtypes(T)
@@ -25,47 +28,61 @@ JSON schema when passed through the `JSON3.write` function.
 If schemas are required for the fields or subtypes of `T` then those are either inlined 
 in the returned schema, or the types are listed in the second output.
 """
-schema_and_subtypes(::Type{String}) = ((type="string",), [])
-schema_and_subtypes(::Type{Symbol}) = ((type="string",), [])
-schema_and_subtypes(::Type{<:Real}) = ((type="number",), [])
-schema_and_subtypes(::Type{<:Integer}) = ((type="integer",), [])
-schema_and_subtypes(::Type{Bool}) = ((type="boolean",), [])
-schema_and_subtypes(::Type{Nothing}) = ((type="null",), [])
-schema_and_subtypes(::Type{<:Pair}) = throw(ArgumentError("`Pair` is ambiguous. Use a `NamedTuple` instead."))
-schema_and_subtypes(::Type{<:Ptr}) = throw(ArgumentError("`Ptr` has no schema. (Pointers are not supported by JSON.)"))
-schema_and_subtypes(::Type{Any}) = ("\$comment" => "Any", [])
-
-# Note: OpenAI's "Structured Output" API currently does not support
-#       `minLength` and `maxLength` so it may give invalid responses for `Char`
-#       Therefore `String` might be a better choice.
-schema_and_subtypes(::Type{Char}) = ((type="string",), [])
-
-function schema_and_subtypes(::Type{<:Dict{<:Union{String, Symbol}, T}}) where {T}
-    s, st = schema_and_subtypes(T)
-    ((type="object", additionalProperties=s), st)
+function schema_and_subtypes(::Type{T}) where {T} 
+    if isabstracttype(T)
+        #return anyOf_and_subtypes(subtypes(T)) # requires InteractiveUtils
+        throw(ArgumentError("Schemas of abstract types are not supported at the moment"))
+    end
+    schema_and_subtypes(StructTypes.StructType(T), T)
 end
 
-schema_and_subtypes(::Type{Dict{<:Union{String, Symbol}, Any}}) = ((type="object",), [])
+schema_and_subtypes(::Type{Any}) = ("\$comment" => "Any", [])
+schema_and_subtypes(::Type{<:Pair}) = throw(ArgumentError("`Pair` is ambiguous. Use a `NamedTuple` instead."))
+schema_and_subtypes(::Type{<:Ptr}) = throw(ArgumentError("`Ptr` has no schema. (Pointers are not supported by JSON.)"))
 
-function schema_and_subtypes(::Type{Vector{T}}) where {T}
-    if inlineschema(T)
-        s, st = schema_and_subtypes(T)
-        ((type="array", items=s), st)
+schema_and_subtypes(::StructTypes.StringType, _) = ((type="string",), [])
+schema_and_subtypes(::Type{Symbol}) = ((type="string",), [])
+schema_and_subtypes(::StructTypes.NumberType, ::Type{<:Real}) = ((type="number",), [])
+schema_and_subtypes(::StructTypes.NumberType, ::Type{<:Integer}) = ((type="integer",), [])
+schema_and_subtypes(::StructTypes.BoolType, _) = ((type="boolean",), [])
+schema_and_subtypes(::StructTypes.NullType, _) = ((type="null",), [])
+
+function schema_and_subtypes(::StructTypes.DictType, T)
+    ET = valtype(T)
+    if ET == Any
+        ((type="object",), [])
     else
-        ((type="array", items=schemaref(T)), Any[T,])
+        if inlineschema(ET)
+            s, st = schema_and_subtypes(ET)
+            ((type="object", additionalProperties=s), st)
+        else
+            ((type="object", additionalProperties=schemaref(ET)), Any[ET,])
+        end
     end
 end
 
-schema_and_subtypes(::Type{Vector{Any}}) = ((type="array",), [])
+function schema_and_subtypes(::StructTypes.ArrayType, T)
+    ET = eltype(T)
+    if ET == Any
+        ((type="array",), [])
+    else
+        if inlineschema(ET)
+            s, st = schema_and_subtypes(ET)
+            ((type="array", items=s), st)
+        else
+            ((type="array", items=schemaref(ET)), Any[ET,])
+        end
+    end
+end
 
-function schema_and_subtypes(::Type{T}) where {T<:Union{Enum, Option}}
+function schema_and_subtypes(::StructTypes.StringType, ::Type{T}) where {T<:Union{Enum, Option}}
     ((type="string", enum=Symbol.(instances(T))), [])
 end
 
 # Note: OpenAI's "Structured Output" API currently does not support
 #       `minIems` so it may give invalid responses for `Tuple`
 #       Therefore `NamedTuple` or `Vector` are better choices.
-function schema_and_subtypes(::Type{T}) where {T<:Tuple}
+function schema_and_subtypes(::StructTypes.ArrayType, ::Type{T}) where {T<:Tuple}
     rt = []
     pr = []
 
@@ -87,13 +104,7 @@ end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)
 
-# The general case: Everything that is not an abstract type is treated as a struct
-function schema_and_subtypes(::Type{T}) where {T}
-    if isabstracttype(T)
-        #return anyOf_and_subtypes(subtypes(T)) # requires InteractiveUtils
-        throw(ArgumentError("Schemas of abstract types are not supported at the moment"))
-    end
- 
+function schema_and_subtypes(::Union{StructTypes.UnorderedStruct,StructTypes.OrderedStruct}, ::Type{T}) where {T}
     rt = []
     pr = []
 

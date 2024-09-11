@@ -54,6 +54,7 @@ end
     o16 = Char['h', 'e', 'l', 'l', 'o']
     o17 = Baz("hi", 2)
     o18 = Baz(Foo(1,"hi"), 2)
+    o19 = [Structured.Option{(:yes, :no)}(:yes),]
 
     # For now it is better to use Union than absstract type...
     o15b = FooOrBar[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
@@ -61,7 +62,7 @@ end
 
     noS = Schema(JSON3.write(Structured.schema(typeof((invalid=true,)))))
 
-    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15a, o16, o17, o18)
+    for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15a, o16, o17, o18, o19)
         t = typeof(o)
         s = Structured.schema(t)
         js = JSON3.write(s) # schema as a JSON string
