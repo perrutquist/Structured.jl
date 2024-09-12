@@ -1,6 +1,6 @@
 # StructuredOutputs.jl
 
-StructuredOutputs.jl is a Julia package to create JSON schemas from Julia types for the [StructuredOutputs outputs](https://platform.openai.com/docs/guides/StructuredOutputs-outputs/StructuredOutputs-outputs) feature of the OpenAI API.
+StructuredOutputs.jl is a Julia package to create JSON schemas from Julia types for the [Structured Outputs](https://platform.openai.com/docs/guides/StructuredOutputs-outputs/StructuredOutputs-outputs) feature of the OpenAI API.
 
 It also contains a few convenience functions to enable the use of these schemas together with the [OpenAI.jl](https://github.com/JuliaML/OpenAI.jl) package,
 making it possible to extract replies from the Large Language Model in the form of a specific Julia type, rather than text or JSON.
@@ -9,7 +9,7 @@ The Large Language Model (LLM) will see the names of the user created `struct` t
 
 Individual fields can have docstrings, if the type itself has one. (As in the example below.)
 
-It is usually best to create entirely new types for use with StructuredOutputs output, rather than re-using existing types that may have names, 
+It is usually best to create entirely new types for use with structured outputs, rather than re-using existing types that may have names, 
 field names, and docstrings that might be less helpful to the LLM.
 
 ## Supported Types
@@ -83,7 +83,7 @@ Array{CC}((3,))
 
 ## Another example
 
-This is a Julia version of the "Chain of thought" example at https://platform.openai.com/docs/guides/StructuredOutputs-outputs/examples
+This is a Julia version of the "Chain of thought" example at https://platform.openai.com/docs/guides/structured-outputs/examples
 
 ```julia
 using StructuredOutputs: system, user, assistant, response_format, get_choices

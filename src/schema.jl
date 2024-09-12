@@ -92,7 +92,7 @@ function schema_and_subtypes(::StructTypes.StringType, ::Type{T}) where {T<:Unio
     ((type="string", enum=Symbol.(instances(T))), [])
 end
 
-# Note: OpenAI's "StructuredOutputs Output" API currently does not support
+# Note: OpenAI's "Structured Outputs" API currently does not support
 #       `minIems` so it may give invalid responses for `Tuple`
 #       Therefore `NamedTuple` or `Vector` are better choices.
 function schema_and_subtypes(::StructTypes.ArrayType, ::Type{T}) where {T<:Tuple}
