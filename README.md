@@ -21,16 +21,16 @@ re-using existing types that may have names, field names, and docstrings that mi
 - `Float64` and other subtypes of `Real`
 - `Nothing`, `Missing` (map to `null` in JSON)
 - `NamedTuple` containing supported types
-- `Dict{S, T}` where `S<:Union{String, Symbol}` and `T` is a supported type
 - `Vector{T}` of supported type `T`
 - `Union` of supported types.
 - `Any` (Results in an empty schema.)
 
 ## Unsupported Types
 
-- `Tuple` is not supported. Use `Vector` or `NamedTuple` instead.
 - Abstract types are not supported. Use `Union` instead.
-- `Val`, and other singleton types. Use single-value `Enum` instead.
+- `Val`, and other singleton types are not supported. Use single-value `Enum` instead.
+- `Dict` is not supported. Although `Dict{S, T}` where `S<:Union{String, Symbol}` yields a valid schema when `T` is a supported type, the OpenAI API wants all field names to be specified. Use `NamedTuple` instead.
+- `Tuple` also yields a valid schema, but is not supported. Use `Vector` or `NamedTuple` instead.
 
 ## Example
 
