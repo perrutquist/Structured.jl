@@ -39,7 +39,7 @@ In the below example, the prompt gives no hint as to what is expected, yet the r
 (Note: It is not possible to run this example without an API key from OpenAI.)
 
 ```julia
-using Structured: system, user, assistant, response_format, get_choices, OneOf
+using Structured: system, user, assistant, response_format, get_choices
 using OpenAI
 
 "A capital city"
@@ -129,4 +129,55 @@ MathReasoning
       explanation: String "Further simplifying \\( -\\frac{30}{8} \\), we divide the numerator and the denominator by their greatest common divisor, which is 2."
       output: String "x = -\\frac{15}{4}"
   final_answer: String "x = -\\frac{15}{4}"
+```
+
+## Debugging the schema
+
+The `schema` function generates a schema from a type, for example:
+
+```julia
+using Structured: schema
+using JSON3
+
+schema(MathReasoning) |> JSON3.pretty
+```
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "steps": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/Step"
+            }
+        },
+        "final_answer": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "steps",
+        "final_answer"
+    ],
+    "$defs": {
+        "Step": {
+            "type": "object",
+            "properties": {
+                "explanation": {
+                    "type": "string"
+                },
+                "output": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "explanation",
+                "output"
+            ]
+        }
+    }
+}
 ```
