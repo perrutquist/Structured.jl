@@ -1,4 +1,4 @@
-using Structured
+using StructuredOutputs
 using Test
 using JSON3
 using JSONSchema
@@ -35,7 +35,7 @@ end
 
 @enum YN yes no
 
-@testset "Structured.jl" begin
+@testset "StructuredOutputs.jl" begin
     o1 = Bar(Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing))
     o2 = (x="Hello", y=:World)
     o3 = (answer=yes, guide=42.0f0, b=true, f=false, next=nothing)
@@ -54,17 +54,17 @@ end
     o16 = Char['h', 'e', 'l', 'l', 'o']
     o17 = Baz("hi", 2)
     o18 = Baz(Foo(1,"hi"), 2)
-    o19 = [Structured.OneOf{(:yes, :no)}(:yes),]
+    o19 = [StructuredOutputs.OneOf{(:yes, :no)}(:yes),]
 
     # For now it is better to use Union than absstract type...
     o15b = FooOrBar[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
     @test_throws ArgumentError JSON3.read(JSON3.write(o15b), typeof(o15b))
 
-    noS = Schema(JSON3.write(Structured.schema(typeof((invalid=true,)))))
+    noS = Schema(JSON3.write(StructuredOutputs.schema(typeof((invalid=true,)))))
 
     for o in (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15a, o16, o17, o18, o19)
         t = typeof(o)
-        s = Structured.schema(t)
+        s = StructuredOutputs.schema(t)
         js = JSON3.write(s) # schema as a JSON string
         jo = JSON3.write(o) # object as a JSON string
         #println("Schema:")
@@ -81,8 +81,8 @@ end
         @test r == o
     end
 
-    @test_throws ArgumentError Structured.schema(Ptr{Int})
-    @test_throws ArgumentError Structured.schema(typeof(:a => 1))
+    @test_throws ArgumentError StructuredOutputs.schema(Ptr{Int})
+    @test_throws ArgumentError StructuredOutputs.schema(typeof(:a => 1))
 
-    @test JSON3.write(Structured.response_format(typeof((a=1,)), "response")) == "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"response\",\"schema\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"}},\"additionalProperties\":false,\"required\":[\"a\"]},\"strict\":true}}"
+    @test JSON3.write(StructuredOutputs.response_format(typeof((a=1,)), "response")) == "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"response\",\"schema\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"}},\"additionalProperties\":false,\"required\":[\"a\"]},\"strict\":true}}"
 end

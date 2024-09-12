@@ -1,6 +1,6 @@
-# Structured.jl
+# StructuredOutputs.jl
 
-Structured.jl is a Julia package to create JSON schemas from Julia types for the [Structured outputs](https://platform.openai.com/docs/guides/structured-outputs/structured-outputs) feature of the OpenAI API.
+StructuredOutputs.jl is a Julia package to create JSON schemas from Julia types for the [StructuredOutputs outputs](https://platform.openai.com/docs/guides/StructuredOutputs-outputs/StructuredOutputs-outputs) feature of the OpenAI API.
 
 It also contains a few convenience functions to enable the use of these schemas together with the [OpenAI.jl](https://github.com/JuliaML/OpenAI.jl) package,
 making it possible to extract replies from the Large Language Model in the form of a specific Julia type, rather than text or JSON.
@@ -9,7 +9,7 @@ The Large Language Model (LLM) will see the names of the user created `struct` t
 
 Individual fields can have docstrings, if the type itself has one. (As in the example below.)
 
-It is usually best to create entirely new types for use with structured output, rather than re-using existing types that may have names, 
+It is usually best to create entirely new types for use with StructuredOutputs output, rather than re-using existing types that may have names, 
 field names, and docstrings that might be less helpful to the LLM.
 
 ## Supported Types
@@ -39,7 +39,7 @@ In the below example, the prompt gives no hint as to what is expected, yet the r
 (Note: It is not possible to run this example without an API key from OpenAI.)
 
 ```julia
-using Structured: system, user, assistant, response_format, get_choices
+using StructuredOutputs: system, user, assistant, response_format, get_choices
 using OpenAI
 
 "A capital city"
@@ -83,10 +83,10 @@ Array{CC}((3,))
 
 ## Another example
 
-This is a Julia version of the "Chain of thought" example at https://platform.openai.com/docs/guides/structured-outputs/examples
+This is a Julia version of the "Chain of thought" example at https://platform.openai.com/docs/guides/StructuredOutputs-outputs/examples
 
 ```julia
-using Structured: system, user, assistant, response_format, get_choices
+using StructuredOutputs: system, user, assistant, response_format, get_choices
 using OpenAI
 
 struct Step
@@ -141,7 +141,7 @@ MathReasoning
 The `schema` function generates a schema from a type, for example:
 
 ```julia
-using Structured: schema
+using StructuredOutputs: schema
 using JSON3
 
 schema(MathReasoning) |> JSON3.pretty

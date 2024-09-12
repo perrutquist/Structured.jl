@@ -1,4 +1,4 @@
-using Structured: system, user, assistant, response_format, get_choices, OneOf
+using StructuredOutputs: system, user, assistant, response_format, get_choices, OneOf
 using OpenAI
 
 "A capital city"

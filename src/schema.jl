@@ -92,7 +92,7 @@ function schema_and_subtypes(::StructTypes.StringType, ::Type{T}) where {T<:Unio
     ((type="string", enum=Symbol.(instances(T))), [])
 end
 
-# Note: OpenAI's "Structured Output" API currently does not support
+# Note: OpenAI's "StructuredOutputs Output" API currently does not support
 #       `minIems` so it may give invalid responses for `Tuple`
 #       Therefore `NamedTuple` or `Vector` are better choices.
 function schema_and_subtypes(::StructTypes.ArrayType, ::Type{T}) where {T<:Tuple}
@@ -202,4 +202,4 @@ function withdescription(o::Pair, descr::String)
     NamedTuple{(Symbol(first(o)), :description)}((last(o), descr))
 end
 
-withdescription(o::NamedTuple, ::Nothing) = o
+withdescription(o::Union{NamedTuple, Pair}, ::Nothing) = o

@@ -3,7 +3,7 @@
 A single-value `OneOf` (or `Enum`) can be used to force the AI to output certain constants, essentially making it give instructions to itself.
 
 ```julia
-using Structured: system, user, assistant, response_format, get_choices, get_choice, OneOf
+using StructuredOutputs: system, user, assistant, response_format, get_choices, get_choice, OneOf
 using OpenAI
 
 struct Documentation

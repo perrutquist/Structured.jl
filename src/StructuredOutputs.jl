@@ -1,4 +1,4 @@
-module Structured
+module StructuredOutputs
 
 using JSON3, StructTypes
 

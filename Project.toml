@@ -1,4 +1,4 @@
-name = "Structured"
+name = "StructuredOutputs"
 uuid = "a64ab3a6-1e61-46d9-9cad-3303c166b426"
 authors = ["Per Rutquist <per.rutquist@gmail.com> and contributors"]
 version = "0.1.0-DEV"
