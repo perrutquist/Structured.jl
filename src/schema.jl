@@ -59,6 +59,7 @@ schema_and_subtypes(::StructTypes.NumberType, ::Type{<:Integer}) = ((type="integ
 schema_and_subtypes(::StructTypes.BoolType, _) = ((type="boolean",), [])
 schema_and_subtypes(::StructTypes.NullType, _) = ((type="null",), [])
 
+# Note: OpenAI's API currently requires all fields to be fixed, so a Dict is not allowed.
 function schema_and_subtypes(::StructTypes.DictType, T)
     ET = valtype(T)
     if ET == Any
@@ -111,7 +112,7 @@ function schema_and_subtypes(::StructTypes.ArrayType, ::Type{T}) where {T<:Tuple
         push!(pr, s)
     end
 
-    ((type="array", prefix_items=pr, items=false, minItems=lenght(v), maxItems=length(v)), rt)
+    ((type="array", prefix_items=pr, items=false, minItems=length(T.types), maxItems=length(T.types)), rt)
 end
 
 _setpush!(v, x) = x in v ? v : push!(v, x)

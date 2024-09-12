@@ -7,10 +7,10 @@ making it possible to extract replies from the Large Language Model in the form 
 
 The Large Language Model (LLM) will see the names of the user created `struct` types that are used, as well as their field names, and docstrings.
 
-Individual fields can have docstrings, if the type itself has one.
+Individual fields can have docstrings, if the type itself has one. (As in the example below.)
 
-It is often best to create entirely new types for use with structured output, rather than using `NamedTuple` or 
-re-using existing types that may have names, field names, and docstrings that might be less helpful to the LLM.
+It is usually best to create entirely new types for use with structured output, rather than re-using existing types that may have names, 
+field names, and docstrings that might be less helpful to the LLM.
 
 ## Supported Types
 
@@ -19,18 +19,18 @@ re-using existing types that may have names, field names, and docstrings that mi
 - `Bool`
 - `Int`, and other subtypes of `Integer`
 - `Float64` and other subtypes of `Real`
-- `Nothing`, `Missing` (map to `null` in JSON)
+- `Nothing` and `Missing` (map to `null` in JSON)
 - `NamedTuple` containing supported types
 - `Vector{T}` of supported type `T`
 - `Union` of supported types.
-- `Any` (Results in an empty schema.)
 
 ## Unsupported Types
 
 - Abstract types are not supported. Use `Union` instead.
 - `Val`, and other singleton types are not supported. Use single-value `Enum` instead.
-- `Dict` is not supported. Although `Dict{S, T}` where `S<:Union{String, Symbol}` yields a valid schema when `T` is a supported type, the OpenAI API wants all field names to be specified. Use `NamedTuple` instead.
+- `Dict` is not supported. Although `Dict{String, T}` yields a valid schema as a JSON `object` when `T` is a supported type, the OpenAI API wants all field names to be specified. A `Vector{@NamedTuple{key::String, value::T}}` can be used instead.
 - `Tuple` also yields a valid schema, but is not supported. Use `Vector` or `NamedTuple` instead.
+- `Any` yields an empty schema, which is valid but not supported by the OpenAI API.
 
 ## Example
 
