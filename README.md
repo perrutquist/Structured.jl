@@ -1,6 +1,6 @@
 # StructuredOutputs.jl
 
-StructuredOutputs.jl is a Julia package to create JSON schemas from Julia types for the [Structured Outputs](https://platform.openai.com/docs/guides/StructuredOutputs-outputs/StructuredOutputs-outputs) feature of the OpenAI API.
+StructuredOutputs.jl is a Julia package to create JSON schemas from Julia types for the [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs/structured-outputs) feature of the OpenAI API.
 
 It also contains a few convenience functions to enable the use of these schemas together with the [OpenAI.jl](https://github.com/JuliaML/OpenAI.jl) package,
 making it possible to extract replies from the Large Language Model in the form of a specific Julia type, rather than text or JSON.
