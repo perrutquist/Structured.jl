@@ -5,8 +5,10 @@ using OpenAI
 struct CC
     "the city"
     a::String
+    "the region or province"
+    b::Union{String, Nothing}
     "the country"
-    b::String
+    c::String
 end
 
 choices = OpenAI.create_chat(

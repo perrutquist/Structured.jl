@@ -46,8 +46,10 @@ using OpenAI
 struct CC
     "the city"
     a::String
+    "the region or province"
+    b::Union{String, Nothing}
     "the country"
-    b::String
+    c::String
 end
 
 choices = OpenAI.create_chat(
@@ -66,14 +68,17 @@ Example response:
 ```
 Array{CC}((3,))
   1: CC
-    a: String "Accra"
-    b: String "Ghana"
+    a: String "Kathmandu"
+    b: String "Bagmati"
+    c: String "Nepal"
   2: CC
-    a: String "Paris"
-    b: String "France"
-  3: CC
     a: String "Tokyo"
-    b: String "Japan"
+    b: Nothing nothing
+    c: String "Japan"
+  3: CC
+    a: String "Ottawa"
+    b: String "Ontario"
+    c: String "Canada"
 ```
 
 ## Another example
