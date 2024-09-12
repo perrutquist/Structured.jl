@@ -1,7 +1,7 @@
 name = "StructuredOutputs"
 uuid = "a64ab3a6-1e61-46d9-9cad-3303c166b426"
 authors = ["Per Rutquist <per.rutquist@gmail.com> and contributors"]
-version = "0.1.0-DEV"
+version = "0.1.0"
 
 [deps]
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
