@@ -118,7 +118,7 @@ end
 _setpush!(v, x) = x in v ? v : push!(v, x)
 
 # User-defined struct
-function schema_and_subtypes(::Union{StructTypes.UnorderedStruct,StructTypes.OrderedStruct}, ::Type{T}) where {T}
+function schema_and_subtypes(::StructTypes.Struct, ::Type{T}) where {T}
     rt = []
     pr = []
 
