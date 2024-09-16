@@ -13,7 +13,7 @@ response = if get(ENV, "TEST_WITH_OPENAI", "false") == "true"
         "gpt-4o-2024-08-06",
         [ system => "You are a coin-flipping assistant.",
         user => "Please flip a coin for me. Respond in JSON format." ],
-        response_format = response_format(CoinFlip),
+        response_format = response_format(Vector{CoinFlip}),
         logprobs = true,
         top_logprobs = 8, # Max 20
         n = 2

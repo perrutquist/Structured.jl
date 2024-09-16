@@ -18,6 +18,8 @@ WithTopLogprobs(v, p) = WithTopLogprobs(v, p, Pair{String, Float64}[])
 
 StructTypes.StructType(::Type{WithTopLogprobs{T}}) where {T} = StructTypes.StructType(T)
 
+schema_and_subtypes(::Type{<:WithTopLogprobs{T}}) where {T} = schema_and_subtypes(T)
+
 Base.convert(::Type{T}, o::WithTopLogprobs{T}) where {T} = o.value
 
 function JSON3.read(i::StructTypes.StringType, buf, pos, len, b, ::Type{WithTopLogprobs{T}}; kw...) where {T}
@@ -61,7 +63,7 @@ function find_logprobs!(::StructTypes.Struct, o::T, logprobs) where {T}
     o
 end
 
-function find_logprobs!(::StructTypes.Array, o, logprobs) where {T}
+function find_logprobs!(::StructTypes.Array, o, logprobs)
     for x in o
         find_logprobs!(x, logprobs)
     end
