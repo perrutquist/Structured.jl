@@ -93,8 +93,8 @@ end
     @test JSON3.write(StructuredOutputs.response_format(typeof((a=1,)), "response")) == "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"response\",\"schema\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"}},\"additionalProperties\":false,\"required\":[\"a\"]},\"strict\":true}}"
 
     # Documentation tests don't work for some reason?
-    #@test StructuredOutputs._getdoc(Foo) == "A test object"
-    #@test StructuredOutputs._getdoc(Foo, :checksum) == "Must be the number thirty-one"
+    @test StructuredOutputs._getdoc(Foo) == "A test object"
+    @test StructuredOutputs._getdoc(Foo, :checksum) == "Must be the number thirty-one"
 
     # The below tests require an API key and consume credits. To run them:
     # using Pkg; Pkg.test("StructuredOutputs"; test_args=["--call_api"])
@@ -119,10 +119,10 @@ end
 
             @test choice isa T
 
-            #if T == t1
-            #    # Test that the LLM was paying attention to the documentation.
-            #    @test choice.x == 31
-            #end
+            if T == t1
+                # Test that the LLM was paying attention to the documentation.
+                @test choice.checksum == 31
+            end
 
             dump(choice)
         end
