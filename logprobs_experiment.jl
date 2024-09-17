@@ -1,5 +1,5 @@
 using StructuredOutputs: system, user, assistant, response_format, get_choices, OneOf, WithTopLogprobs
-using OpenAI
+using OpenAI, JSON3
 
 struct CoinFlip
     result::WithTopLogprobs{OneOf{(:heads, :tails)}}
