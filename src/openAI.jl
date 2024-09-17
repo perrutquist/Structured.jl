@@ -38,7 +38,7 @@ keyword argument of the `OpenAI.create_chat` function.
 Note: When using the response_format keyword argument the AI must also be instructed
 to output JSON. See the OpenAI API documentation on Structured Outputs.
 """
-function response_format(t, name=string(t))
+function response_format(t, name=schemaname(t))
     ResponseFormat("json_schema", (name=name, schema=schema(t), strict=true))
 end
 

@@ -12,7 +12,13 @@ Individual fields can have docstrings, if the type itself has one. (As in the ex
 It is usually best to create entirely new types for use with structured outputs, rather than re-using existing types that may have names, 
 field names, and docstrings that might be less helpful to the LLM.
 
+## Alternative
+
+The ["data extraction" feature of PromptingTools.jl](https://github.com/svilupp/PromptingTools.jl?tab=readme-ov-file#data-extraction) does basically the same thing as this package does.
+
 ## Supported Types
+
+The top-level object in the API call must be a struct (or NamedTuple), where the field types can be any of the following:
 
 - User created `struct` types with supported types in all fields and default constructors
 - `String`, `Symbol`, `Enum`
@@ -21,7 +27,7 @@ field names, and docstrings that might be less helpful to the LLM.
 - `Float64` and other subtypes of `Real`
 - `Nothing` and `Missing` (map to `null` in JSON)
 - `NamedTuple` containing supported types
-- `Vector{T}` of supported type `T`
+- `Vector{T}` of supported type `T`.
 - `Union` of supported types.
 
 ## Unsupported Types

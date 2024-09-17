@@ -1,20 +1,21 @@
 name = "StructuredOutputs"
 uuid = "a64ab3a6-1e61-46d9-9cad-3303c166b426"
 authors = ["Per Rutquist <per.rutquist@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 
 [compat]
-julia = "1.9"
 JSON3 = "1"
 StructTypes = "1"
+julia = "1.9"
 
 [extras]
 JSONSchema = "7d188eb4-7ad8-530c-ae41-71a32a6d4692"
+OpenAI = "e9f21f70-7185-4079-aca2-91159181367c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["JSONSchema", "Test"]
+test = ["JSONSchema", "OpenAI", "Test"]

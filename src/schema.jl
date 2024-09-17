@@ -158,8 +158,23 @@ function anyOf_and_subtypes(ts)
 end
 
 function schemaref(T)
-    NamedTuple{(Symbol("\$ref"),)}((string("#/\$defs/", T),))
+    NamedTuple{(Symbol("\$ref"),)}((string("#/\$defs/", schemaname(T)),))
 end
+
+"""
+    schemaname(T)
+
+Returns a name to be used for the type `T` when referencing it in the schema.
+"""
+function schemaname(::Type{T}) where {T}
+    replace(string(T), "{" => "_", "}" => "", "," => "-", " " => "")
+end
+
+schemaname(::Type{<:NamedTuple{S}}) where {S} = string(join(S, "-"), "_object")
+
+schemaname(::Type{<:AbstractVector{T}}) where {T} = string(schemaname(T), "_list")
+
+schemaname(::Type{<:OneOf{S}}) where {S} = string("choose_", join(S, "-"))
 
 """
     schema(T)
@@ -180,7 +195,7 @@ function schema(t)
     ss = []
     while i<=length(ts)
         (si, tsi) = schema_and_subtypes(ts[i])
-        push!(ss, Symbol(string(ts[i])) => si)
+        push!(ss, Symbol(schemaname(ts[i])) => si)
         for q in tsi
             _setpush!(ts, q)
         end

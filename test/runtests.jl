@@ -1,12 +1,18 @@
 using StructuredOutputs
+using StructuredOutputs: system, assistant, user, get_choice, response_format
 using Test
 using JSON3
 using JSONSchema
+using OpenAI
 
 abstract type FooOrBar end
 
+# This type has documentation, for use in the API tests
+"A test object"
 struct Foo <: FooOrBar
-    x::Int
+    "Must be the number thirty-one"
+    checksum::Int
+    "A greeting"
     y::String
 end
 
@@ -85,4 +91,40 @@ end
     @test_throws ArgumentError StructuredOutputs.schema(typeof(:a => 1))
 
     @test JSON3.write(StructuredOutputs.response_format(typeof((a=1,)), "response")) == "{\"type\":\"json_schema\",\"json_schema\":{\"name\":\"response\",\"schema\":{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"integer\"}},\"additionalProperties\":false,\"required\":[\"a\"]},\"strict\":true}}"
+
+    # Documentation tests don't work for some reason?
+    #@test StructuredOutputs._getdoc(Foo) == "A test object"
+    #@test StructuredOutputs._getdoc(Foo, :checksum) == "Must be the number thirty-one"
+
+    # The below tests require an API key and consume credits. To run them:
+    # using Pkg; Pkg.test("StructuredOutputs"; test_args=["--call_api"])
+    if "--call_api" in ARGS
+        println("Testing calls to the OpenAI API")
+
+        t1 = Foo
+        t2 = Baz{Vector{Foo}}
+        t3 = @NamedTuple{number::Int, french_word::String}
+
+        for T in (t1, t2, t3)
+            JSON3.pretty(response_format(T))
+
+            choice = OpenAI.create_chat(
+                ENV["OPENAI_API_KEY"],
+                "gpt-4o-mini",
+                [ system => "You're a helpful assistant.",
+                user => "Please give me a small JSON snippet that matches the provided schema." ],
+                response_format = response_format(T),
+                n = 1
+            ) |> get_choice(T)
+
+            @test choice isa T
+
+            #if T == t1
+            #    # Test that the LLM was paying attention to the documentation.
+            #    @test choice.x == 31
+            #end
+
+            dump(choice)
+        end
+    end
 end
