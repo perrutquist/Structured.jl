@@ -1,5 +1,5 @@
 using StructuredOutputs
-using StructuredOutputs: system, assistant, user, get_choice, response_format
+using StructuredOutputs: system, assistant, user, get_choice, response_format, parse_json
 using Test
 using JSON3
 using JSONSchema
@@ -64,7 +64,7 @@ end
 
     # For now it is better to use Union than absstract type...
     o15b = FooOrBar[Foo(42, "Hi"), Bar(Foo(0, "bye"), nothing)]
-    @test_throws ArgumentError JSON3.read(JSON3.write(o15b), typeof(o15b))
+    @test_throws ArgumentError parse_json(JSON3.write(o15b), typeof(o15b))
 
     noS = Schema(JSON3.write(StructuredOutputs.schema(typeof((invalid=true,)))))
 
@@ -78,11 +78,11 @@ end
         #println("Object:")
         #println(jo)
         S = Schema(js)
-        pjo = JSON3.read(jo) # Object in JSON3.Object form
+        pjo = parse_json(jo) # Object in JSON3.Object form
         @test validate(S, pjo) === nothing
         @test validate(noS, pjo) !== nothing
         #r = StructTypes.constructfrom(t, pjo) # Object restored into type t.
-        r = JSON3.read(jo, t) # skip StructTypes
+        r = parse_json(jo, t) # skip StructTypes
         @test typeof(r) == t
         @test r == o
     end
