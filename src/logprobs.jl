@@ -23,9 +23,14 @@ schema_and_subtypes(::Type{<:WithTopLogprobs{T}}) where {T} = schema_and_subtype
 Base.convert(::Type{T}, o::WithTopLogprobs{T}) where {T} = o.value
 
 function JSON3.read(i::StructTypes.StringType, buf, pos, len, b, ::Type{WithTopLogprobs{T}}; kw...) where {T}
-    @show i buf pos len b T
+    Char(buf[pos]) == '"' || error("Expected string to start with quotation mark.")
     next_pos, x = JSON3.read(i, buf, pos, len, b, T; kw...)
-    next_pos, WithTopLogprobs(x, pos+1) # pos+1 to get one-based indexing
+    next_pos, WithTopLogprobs(x, pos+1) # pos+1 because the first character of the string is the quotation mark
+end
+
+function JSON3.read(i::StructTypes.BoolType, buf, pos, len, b, ::Type{WithTopLogprobs{T}}; kw...) where {T}
+    next_pos, x = JSON3.read(i, buf, pos, len, b, T; kw...)
+    next_pos, WithTopLogprobs(x, pos)
 end
 
 function logprobs_at(logprobs, ix::Integer)
@@ -69,3 +74,32 @@ function find_logprobs!(::StructTypes.Array, o, logprobs)
     end
     o
 end
+
+function _getfirst(f, list, default=nothing)
+    ix = findfirst(f, list)
+    ix isa Nothing && return default
+    list[ix]
+end
+
+function _getlogprob(s, top_logprobs)
+    last(_getfirst(p->startswith(first(p), string(s)), top_logprobs, -Inf))
+end
+
+function get_probability(o::WithTopLogprobs{OneOf{T}}, s::Symbol) where {T}
+    s in T || throw(ArgumentError(lazy"$s, is not one of $T"))
+    exp(_getlogprob(s, o.top_logprobs))
+end 
+
+get_probability(o::WithTopLogprobs{OneOf{T}}, s::OneOf{T}) where {T} = get_probability(o, Symbol(s))
+
+function get_probability(o::WithTopLogprobs{OneOf{T}}) where {T}
+    NamedTuple{T}(ntuple(i -> get_probability(o, T[i]), length(T)))
+end 
+
+function get_probability(o::WithTopLogprobs{Bool}, b::Bool) 
+    exp(_getlogprob(b ? :true : :false, o.top_logprobs))
+end 
+
+function get_probability(o::WithTopLogprobs{Bool}) 
+    (true => get_probability(o, true), false => get_probability(o, false))
+end 
