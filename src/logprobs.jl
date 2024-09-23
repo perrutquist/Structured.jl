@@ -68,7 +68,7 @@ function find_logprobs!(::StructTypes.Struct, o::T, logprobs) where {T}
     o
 end
 
-function find_logprobs!(::StructTypes.Array, o, logprobs)
+function find_logprobs!(::StructTypes.ArrayType, o, logprobs)
     for x in o
         find_logprobs!(x, logprobs)
     end
