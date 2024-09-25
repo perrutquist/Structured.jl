@@ -8,6 +8,8 @@ end
 
 JSON3.read_json_str(s::Workaround272) = s.str
 
+Base.codeunits(s::Workaround272) = codeunits(s.str)
+
 """
 Parse a JSON string using `JSON3.read`, without first trying to interpret it as a filename.
 """
