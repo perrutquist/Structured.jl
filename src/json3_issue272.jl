@@ -1,3 +1,6 @@
+# TODO: As soon as JSON3.jl/issue #272 is resolved, this file should be removed,
+# and calls to parse_json should be replaced with whatever JSON3.jl uses to parse JSON.
+
 """
 Wrapper type used for a workaround to https://github.com/quinnj/JSON3.jl/issues/272
 until that issue is resolved.
