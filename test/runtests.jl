@@ -1,6 +1,6 @@
 using StructuredOutputs
 using StructuredOutputs: system, assistant, user, get_choice, response_format, parse_json,
-        WithTopLogprobs, OneOf, get_choices, get_probability, parse_json
+        WithLogprobs, OneOf, get_choices, get_probability, parse_json
 using Test
 using JSON3
 using JSONSchema
@@ -132,7 +132,7 @@ end
 
 @testset "logprobs" begin
     struct CoinFlip
-        result::WithTopLogprobs{OneOf{(:heads, :tails)}}
+        result::WithLogprobs{OneOf{(:heads, :tails)}}
     end
     
     response = if "--call_api" in ARGS
@@ -160,7 +160,7 @@ end
     "The result of a coin flip"
     struct CoinFlipBool
         "true for heads, false for tails"
-        result::WithTopLogprobs{Bool}
+        result::WithLogprobs{Bool}
     end
 
     response = if "--call_api" in ARGS
@@ -185,7 +185,7 @@ end
     @test 0.1 < get_probability(chs[1].result, true) < 0.9
     @test 0.99 < sum(last.(get_probability(chs[1].result))) ≤ 1.0   
 
-    Flip = WithTopLogprobs{OneOf{(:heads, :tails)}}
+    Flip = WithLogprobs{OneOf{(:heads, :tails)}}
 
     response = if "--call_api" in ARGS
         println("Calling OpenAI.")

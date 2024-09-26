@@ -8,29 +8,29 @@ so that the `set_logprobs!` function knows where to look.
 
 Warning: Relies on the internals of JSON3.jl and might break in future versions of that package.
 """
-struct WithTopLogprobs{T}
+struct WithLogprobs{T}
     value::T
     pos::Int
     top_logprobs::Vector{Pair{String, Float64}}
 end
 
-WithTopLogprobs(v, p) = WithTopLogprobs(v, p, Pair{String, Float64}[])
+WithLogprobs(v, p) = WithLogprobs(v, p, Pair{String, Float64}[])
 
-StructTypes.StructType(::Type{WithTopLogprobs{T}}) where {T} = StructTypes.StructType(T)
+StructTypes.StructType(::Type{WithLogprobs{T}}) where {T} = StructTypes.StructType(T)
 
-schema_and_subtypes(::Type{<:WithTopLogprobs{T}}) where {T} = schema_and_subtypes(T)
+schema_and_subtypes(::Type{<:WithLogprobs{T}}) where {T} = schema_and_subtypes(T)
 
-Base.convert(::Type{T}, o::WithTopLogprobs{T}) where {T} = o.value
+Base.convert(::Type{T}, o::WithLogprobs{T}) where {T} = o.value
 
-function JSON3.read(i::StructTypes.StringType, buf, pos, len, b, ::Type{WithTopLogprobs{T}}; kw...) where {T}
+function JSON3.read(i::StructTypes.StringType, buf, pos, len, b, ::Type{WithLogprobs{T}}; kw...) where {T}
     Char(buf[pos]) == '"' || error("Expected string to start with quotation mark.")
     next_pos, x = JSON3.read(i, buf, pos, len, b, T; kw...)
-    next_pos, WithTopLogprobs(x, pos+1) # pos+1 because the first character of the string is the quotation mark
+    next_pos, WithLogprobs(x, pos+1) # pos+1 because the first character of the string is the quotation mark
 end
 
-function JSON3.read(i::StructTypes.BoolType, buf, pos, len, b, ::Type{WithTopLogprobs{T}}; kw...) where {T}
+function JSON3.read(i::StructTypes.BoolType, buf, pos, len, b, ::Type{WithLogprobs{T}}; kw...) where {T}
     next_pos, x = JSON3.read(i, buf, pos, len, b, T; kw...)
-    next_pos, WithTopLogprobs(x, pos)
+    next_pos, WithLogprobs(x, pos)
 end
 
 function logprobs_at(logprobs, ix::Integer)
@@ -47,7 +47,7 @@ function logprobs_at(logprobs, ix::Integer)
     throw(throw(BoundsError(lazy"Index $ix is greater than the buffer length $i.")))
 end
 
-function find_logprobs!(_, o::WithTopLogprobs, logprobs)
+function find_logprobs!(_, o::WithLogprobs, logprobs)
     isempty(o.top_logprobs) || error("Logprobs have already been filled.")
     lp, offs = logprobs_at(logprobs, o.pos)
     offs == 1 || error("Value is not at a token boundary.") # TODO: Clip tokens?
@@ -85,21 +85,21 @@ function _getlogprob(s, top_logprobs)
     last(_getfirst(p->startswith(first(p), string(s)), top_logprobs, -Inf))
 end
 
-function get_probability(o::WithTopLogprobs{OneOf{T}}, s::Symbol) where {T}
+function get_probability(o::WithLogprobs{OneOf{T}}, s::Symbol) where {T}
     s in T || throw(ArgumentError(lazy"$s, is not one of $T"))
     exp(_getlogprob(s, o.top_logprobs))
 end 
 
-get_probability(o::WithTopLogprobs{OneOf{T}}, s::OneOf{T}) where {T} = get_probability(o, Symbol(s))
+get_probability(o::WithLogprobs{OneOf{T}}, s::OneOf{T}) where {T} = get_probability(o, Symbol(s))
 
-function get_probability(o::WithTopLogprobs{OneOf{T}}) where {T}
+function get_probability(o::WithLogprobs{OneOf{T}}) where {T}
     NamedTuple{T}(ntuple(i -> get_probability(o, T[i]), length(T)))
 end 
 
-function get_probability(o::WithTopLogprobs{Bool}, b::Bool) 
+function get_probability(o::WithLogprobs{Bool}, b::Bool) 
     exp(_getlogprob(b ? :true : :false, o.top_logprobs))
 end 
 
-function get_probability(o::WithTopLogprobs{Bool}) 
+function get_probability(o::WithLogprobs{Bool}) 
     (true => get_probability(o, true), false => get_probability(o, false))
 end 
